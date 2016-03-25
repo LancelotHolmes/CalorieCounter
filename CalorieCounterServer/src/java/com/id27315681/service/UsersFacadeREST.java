@@ -86,6 +86,25 @@ public class UsersFacadeREST extends AbstractFacade<Users> {
     }
     
     //---------my code part--------------------------------------------------------
+    //--------basic
+    @GET  //query the user info by accurate userId
+    @Path("findByUserId/{userId}")
+    @Produces({"application/json"})
+    public List<Users> findByUserId(@PathParam("userId") int userId) {
+        Query query = em.createNamedQuery("Users.findByUserId");
+        query.setParameter("userId", userId);
+        return query.getResultList();
+    }
+    
+    @GET  //query the user info by accurate pwd
+    @Path("findByPwd/{pwd}")
+    @Produces({"application/json"})
+    public List<Users> findByPwd(@PathParam("pwd") String pwd) {
+        Query query = em.createNamedQuery("Users.findByPwd");
+        query.setParameter("pwd", pwd);
+        return query.getResultList();
+    }
+    
     @GET  //query the user info by accurate name
     @Path("findByUserName/{userName}")
     @Produces({"application/json"})
@@ -157,11 +176,11 @@ public class UsersFacadeREST extends AbstractFacade<Users> {
         return query.getResultList();
     }
     
-    
+    //----------  advanced query
     @GET    //query user info by age and gender
     @Path("findByAgeAndGender/{age}/{gender}")
     @Produces({"application/json"})
-    public List<Users> findByAgeAndGender(@PathParam("age")int age,@PathParam("gender") boolean gender){//未找到mysql对应java中的tinyint 和bit的数据类型，其中全用int代替在gender处会报错500，所以对于gender只好用boolean来代替，true代表女，1
+    public List<Users> findByAgeAndGender(@PathParam("age")int age,@PathParam("gender") String gender){//未找到mysql对应java中的tinyint 和bit的数据类型，其中全用int代替在gender处会报错500，所以对于gender只好用boolean来代替，true代表女，1
         Query query=em.createNamedQuery("Users.findByAgeAndGender");
         query.setParameter("age", age);
         query.setParameter("gender", gender);

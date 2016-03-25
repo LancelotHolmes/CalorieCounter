@@ -7,12 +7,15 @@ package com.id27315681.service;
 
 import com.id27315681.Report;
 import com.id27315681.ReportPK;
-import java.util.Date;
+import com.id27315681.Users;
+//import java.util.Date;
+import java.sql.Date;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -123,7 +126,7 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
     @GET  //query the report info by recordDate
     @Path("findByRecordDate/{recordDate}")
     @Produces({"application/json"})
-    public List<Report> findByRecordDate(@PathParam("recordDate") Date recordDate) {    //404 error
+    public List<Report> findByRecordDate(@PathParam("recordDate") Date recordDate) {    //mysql中的Date对应java.sql.Date，而非java.util.Date
         Query query = em.createNamedQuery("Report.findByRecordDate");
         query.setParameter("recordDate", recordDate);
         return query.getResultList();
@@ -173,6 +176,66 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
         query.setParameter("totalSteps", totalSteps);
         return query.getResultList();
     }
+    
+    /*//------------------------Calculation with rest methods
+    @GET
+    @Path("CalculateBMR/{userId}")
+    @Produces({"application/json"})
+    public String CalculateBMR(@PathParam("userId") int userId){
+        // dynamic query by id, just for test——>可用现成方法改进
+        TypedQuery<Users> q = em.createQuery("select u from Users u where u.userId=:userId", Users.class);
+        q.setParameter("userId", userId);
+        // get the instance of Class Users through q
+        Users user=q.getSingleResult();
+        String gender=user.getGender();
+        double weight=user.getWeight();
+        double height=user.getHeight();
+        short age=user.getAge();
+        //count BMR by the parameters transmitted from Users
+        Double bmr=Double.valueOf(0);
+        if(gender.toUpperCase().equals("M"))     //——>可用 ? :
+        {   
+            bmr=13.75*weight+5*height-6.76*age+66;
+            return bmr.toString();
+        }
+        else if(gender.toUpperCase().equals("F")){
+            bmr=9.56*weight+1.85*height-4.68*age+655;
+            return bmr.toString();
+        }
+         
+        else
+            return bmr.toString();
+    }*/
+    
+    //------------------------Calculation with rest methods
+    @GET
+    @Path("CalculateBMR/{userId}")
+    @Produces({"application/json"})
+    public String CalculateBMR(@PathParam("userId") int userId){
+        Query q=em.createNamedQuery("Users.findByUserId");
+        q.setParameter("userId", userId);
+        // get the instance of Class Users through q
+        Users user=(Users)q.getSingleResult();
+        String gender=user.getGender();
+        double weight=user.getWeight();
+        double height=user.getHeight();
+        short age=user.getAge();
+        //count BMR by the parameters transmitted from Users
+        Double bmr=Double.valueOf(0);
+        if(gender.toUpperCase().equals("M"))     //——>可用 ? :
+        {   
+            bmr=13.75*weight+5*height-6.76*age+66;
+            return bmr.toString();
+        }
+        else if(gender.toUpperCase().equals("F")){
+            bmr=9.56*weight+1.85*height-4.68*age+655;
+            return bmr.toString();
+        }
+        else
+            return bmr.toString();
+    }
+    
+    
     
     //--------------------my code--------------------------------------------
 

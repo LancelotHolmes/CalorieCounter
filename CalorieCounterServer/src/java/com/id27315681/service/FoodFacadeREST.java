@@ -86,6 +86,17 @@ public class FoodFacadeREST extends AbstractFacade<Food> {
     }
     
     //-------------start of my code------------------
+    //---------basic query
+    @GET  //query the food info by accurate foodId
+    @Path("findByFoodId/{foodId}")
+    @Produces({"application/json"})
+    public List<Food> findByFoodId(@PathParam("foodId") int foodId) {
+        Query query = em.createNamedQuery("Food.findByFoodId");
+        query.setParameter("foodId", foodId);
+        return query.getResultList();
+    }
+    
+    
     @GET  //query the food info by accurate name
     @Path("findByFoodName/{foodName}")
     @Produces({"application/json"})
@@ -139,6 +150,18 @@ public class FoodFacadeREST extends AbstractFacade<Food> {
         return query.getResultList();
     }
     
+    //----------advanced query
+    @GET
+    @Path("findByCalorieANDFat/{calorie}/{fat}")
+    @Produces({"application/json"})
+    public List<Food> findByCalorieANDFat(@PathParam("calorie") double calorie, @PathParam("fat") double fat){
+        TypedQuery<Food> q = em.createQuery("select f from Food f where f.calorie=:calorie and f.fat=:fat", Food.class);
+        q.setParameter("fat", fat);
+        q.setParameter("calorie", calorie);
+        return q.getResultList();
+    }
+    
+  
     
     //-------------end of my code------------------
     

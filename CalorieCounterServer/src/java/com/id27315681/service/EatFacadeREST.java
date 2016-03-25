@@ -7,14 +7,16 @@ package com.id27315681.service;
 
 import com.id27315681.Eat;
 import com.id27315681.EatPK;
-//import java.sql.Date;
+import java.sql.Date;
+import java.sql.Timestamp;
 
-import java.util.Date;
+//import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -134,7 +136,7 @@ public class EatFacadeREST extends AbstractFacade<Eat> {
     @GET  //query the eat info by eatTime
     @Path("findByEatTime/{eatTime}")
     @Produces({"application/json"})
-    public List<Eat> findByEatTime(@PathParam("eatTime") Date eatTime) {    //404 error
+    public List<Eat> findByEatTime(@PathParam("eatTime") Timestamp eatTime) {    //mysql中的DateTime对应java.sql.Timestamp
         Query query = em.createNamedQuery("Eat.findByEatTime");
         query.setParameter("eatTime", eatTime);
         return query.getResultList();
@@ -157,11 +159,43 @@ public class EatFacadeREST extends AbstractFacade<Eat> {
         query.setParameter("measure", measure);
         return query.getResultList();
     }
+    
+    //---------advanced query
+    //--------dynamic query ByUserNameANDFoodName
+    @GET
+    @Path("findByUserNameANDFoodName/{userName}/{foodName}")
+    @Produces({"application/json"})
+    public List<Eat> findByUserNameANDFoodName(@PathParam("userName") String userName,@PathParam("foodName") String foodName){
+        TypedQuery<Eat> q = em.createQuery("select e from Eat e where e.users.userName=:userName and e.foodId.foodName=:foodName", Eat.class);
+        q.setParameter("userName", userName);
+        q.setParameter("foodName", foodName);
+        return q.getResultList();
+    }
 
-
-
-
-
+    // static query ByUserNameANDFoodName
+//    @GET  
+//    @Path("accurateFindByUserNameANDFoodName/{userName}/{foodName}")
+//    @Produces({"application/json"})
+//    public List<Eat> accurateFindByUserNameANDFoodName(@PathParam("userName") String userName,@PathParam("foodName") String foodName) {
+//        Query query = em.createNamedQuery("Eat.accurateFindByUserNameANDFoodName");
+//        query.setParameter("foodName", foodName);
+//        query.setParameter("userName", userName);
+//        return query.getResultList();
+//    }
+    
+    @GET  //static query FindByUserNameANDEatTime
+    @Path("FindByUserNameANDEatTime/{userName}/{eatTime}")
+    @Produces({"application/json"})
+    public String FindByUserNameANDEatTime(@PathParam("userName") String userName,@PathParam("eatTime") Timestamp eatTime) {
+        Query query = em.createNamedQuery("Eat.FindByUserNameANDEatTime");
+        query.setParameter("eatTime", eatTime);
+        query.setParameter("userName", userName);
+        Object[] result=(Object[])query.getSingleResult();
+        String uname=result[0].toString();
+        String fname=result[1].toString();
+        String etime=result[2].toString();
+        return uname+" ate "+fname+" at "+etime;
+    }
 
 
     //--------------------end of my code----------------------
