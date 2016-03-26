@@ -34,7 +34,8 @@ import javax.ws.rs.core.PathSegment;
 @Stateless
 @Path("com.id27315681.report")
 public class ReportFacadeREST extends AbstractFacade<Report> {
-
+     public final double KG_LBS=2.2046;         //1kg=2.2046lbs
+             
     @PersistenceContext(unitName = "CalorieCounterServerPU")
     private EntityManager em;
 
@@ -207,8 +208,8 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
             return bmr.toString();
     }*/
     
-    //------------------------Calculation with rest methods
-    @GET
+    //------------------------Calculation with rest methods  test version
+    /*@GET
     @Path("CalculateBMR/{userId}")
     @Produces({"application/json"})
     public String CalculateBMR(@PathParam("userId") int userId){
@@ -233,9 +234,113 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
         }
         else
             return bmr.toString();
+    }*/
+    
+    //------------------------Calculation with rest methods  app version
+    
+    public double CalculateBMR(int userId){
+        Query q=em.createNamedQuery("Users.findByUserId");
+        q.setParameter("userId", userId);
+        // get the instance of Class Users through q
+        Users user=(Users)q.getSingleResult();
+        String gender=user.getGender();
+        double weight=user.getWeight();
+        double height=user.getHeight();
+        short age=user.getAge();
+        //count BMR by the parameters transmitted from Users
+//        Double bmr=Double.valueOf(0);
+        double bmr=0;
+        if(gender.toUpperCase().equals("M"))     //——>可用 ? :
+        {   
+            bmr=13.75*weight+5*height-6.76*age+66;
+//            return bmr;
+        }
+        else if(gender.toUpperCase().equals("F")){
+            bmr=9.56*weight+1.85*height-4.68*age+655;
+//            return bmr;
+        }
+//        System.out.println(bmr);
+        return bmr;
     }
     
+    //-----------------------Calculation Calorie Burned at rest
     
+    public double CalorieBurnedAtRest(int userId){
+        Query q=em.createNamedQuery("Users.findByUserId");
+        q.setParameter("userId", userId);
+        // get the instance of Class Users through q
+        Users user=(Users)q.getSingleResult();
+        int levelOfAct=user.getLevelOfActivity();
+        // get BMR
+        double bmr=CalculateBMR(userId);
+        //count calorie burned at rest by the parameter activity level transmitted from Users
+        double calorieRest=bmr;
+        switch(levelOfAct){
+            case 1: calorieRest*=1.2;
+            break;
+            case 2: calorieRest*=1.375;
+            break;
+            case 3: calorieRest*=1.55;
+            break;
+            case 4: calorieRest*=1.725;
+            break;
+            case 5: calorieRest*=1.9;
+            break;
+            default:
+                System.out.println("Wrong activity level");
+                break;
+        }
+        return calorieRest;
+        
+    }
+    
+    //----------------------------Calculation calorie burned by steps
+    /*@GET
+    @Path("CalorieBurnedBySteps/{userId}/{recordDate}")
+    @Produces({"application/json"})
+    public String CalorieBurnedBySteps(@PathParam("userId") int userId, @PathParam("recordDate") Date recordDate){
+        Query q=em.createNamedQuery("Users.findByUserId");
+        q.setParameter("userId", userId);
+        // get the instance of Class Users through q
+        Users user=(Users)q.getSingleResult();
+        // get parameter weight&Steps per mile from Users
+        double weight=user.getWeight()*KG_LBS;
+        double stepsPerMile=user.getStepsPerMile();
+        
+//        Query qf=em.createNamedQuery("Report.findByUserId");
+        TypedQuery qr=em.createQuery("select r from Report r where r.reportPK.userId=:userId and r.reportPK.recordDate=:recordDate",Report.class);
+        qr.setParameter("userId", userId);
+        qr.setParameter("recordDate", recordDate);
+        Report report=(Report)qr.getSingleResult();
+        //get parameter total steps per day from Report
+        double totalSteps=report.getTotalSteps();
+        //calorieBurnedPerMile——>calorieBurnedPerStep
+        double calorieBurnedPerMile=weight*0.49;
+        double calorieBurnedPerStep=calorieBurnedPerMile/stepsPerMile;
+        return Double.valueOf(calorieBurnedPerStep*totalSteps).toString();
+    }*/
+    
+    //----------------------Calorie Burned Per Day
+//    @GET
+//    @Path("CalorieBurnedPerDay/{userId}/{recordDate}")
+//    @Produces({"application/json"})
+//    public String CalorieBurnedBySteps(@PathParam("userId") int userId,@PathParam("recordDate") Date recordDate){
+//        Query q=em.createNamedQuery("Users.findByUserId");
+//        q.setParameter("userId", userId);
+//        // get the instance of Class Users through q
+//        Users user=(Users)q.getSingleResult();
+//        // get parameter weight&Steps per mile from Users
+//        double weight=user.getWeight()*KG_LBS;
+//        double stepsPerMile=user.getStepsPerMile();
+//        Query qf=em.createNamedQuery("Report.findByUserId");
+//        qf.setParameter("userId", userId);
+//        Report report=(Report)qf.getSingleResult();
+//        //get parameter total steps per day from Report
+//        double totalSteps=report.getTotalSteps();
+//        double calorieBurnedPerMile=weight*0.49;
+//        double calorieBurnedPerStep=calorieBurnedPerMile/stepsPerMile;
+//        return Double.valueOf(calorieBurnedPerStep*totalSteps).toString();
+//    }
     
     //--------------------my code--------------------------------------------
 
