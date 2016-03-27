@@ -36,6 +36,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     //--------------my code--------------
     @NamedQuery(name = "Eat.findByFoodId", query="select e from Eat e where e.foodId.foodId= :foodId"),
     @NamedQuery(name = "Eat.FindByUserNameANDEatTime", query="select e.users.userName,e.foodId.foodName,e.eatPK.eatTime from Eat e left join Users u on e.eatPK.userId=u.userId where e.users.userName=:userName and e.eatPK.eatTime= :eatTime")
+    
 })
 public class Eat implements Serializable {
 

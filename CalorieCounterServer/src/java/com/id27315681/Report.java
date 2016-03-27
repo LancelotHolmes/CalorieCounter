@@ -32,7 +32,9 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Report.findByCalorieBurned", query = "SELECT r FROM Report r WHERE r.calorieBurned = :calorieBurned"),
     @NamedQuery(name = "Report.findByCalorieGoal", query = "SELECT r FROM Report r WHERE r.calorieGoal = :calorieGoal"),
     @NamedQuery(name = "Report.findByCalorieRemaining", query = "SELECT r FROM Report r WHERE r.calorieRemaining = :calorieRemaining"),
-    @NamedQuery(name = "Report.findByTotalSteps", query = "SELECT r FROM Report r WHERE r.totalSteps = :totalSteps")})
+    @NamedQuery(name = "Report.findByTotalSteps", query = "SELECT r FROM Report r WHERE r.totalSteps = :totalSteps"),
+    @NamedQuery(name="Report.findByUserIdANDRecordDate", query="select r from Report r where r.reportPK.userId=:userId and r.reportPK.recordDate=:recordDate")
+})
 public class Report implements Serializable {
 
     private static final long serialVersionUID = 1L;
