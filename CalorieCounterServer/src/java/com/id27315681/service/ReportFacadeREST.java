@@ -294,6 +294,7 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
                 System.out.println("Wrong activity level");
                 break;
         }
+        System.out.println(calorieRest);
         return calorieRest;
 
     }
@@ -311,7 +312,7 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
 //        Query qf=em.createNamedQuery("Report.findByUserId");
         //locate the record from Report by userId and recordDate
         TypedQuery<Report> qr = em.createQuery("select r from Report r where r.reportPK.userId=:userId and r.reportPK.recordDate=:recordDate", Report.class);
-        qr.setParameter("userId", userId);
+        qr.setParameter("userId", userId);  //这里会产生一个错误在于Eat表和Report表不统一而产生的500查询不到错误
         qr.setParameter("recordDate", recordDate);
         Report report = (Report) qr.getSingleResult();
         //get parameter total steps per day from Report
@@ -319,14 +320,18 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
         //calorieBurnedPerMile——>calorieBurnedPerStep
         double calorieBurnedPerMile = weight * 0.49;
         double calorieBurnedPerStep = calorieBurnedPerMile / stepsPerMile;
+        System.out.println(calorieBurnedPerStep * totalSteps);
         return calorieBurnedPerStep * totalSteps;
     }
 
     //----------------------Calorie Burned Per Day
-    public double CalorieBurnedPerDay(int userId, Date recordDate) {
+    @GET
+    @Path("CalorieBurnedPerDay/{userId}/{recordDate}")
+    @Produces({"application/json"})
+    public String CalorieBurnedPerDay(@PathParam("userId") int userId,@PathParam("recordDate") Date recordDate) {
         double calorieBurnedAtRest = CalorieBurnedAtRest(userId);
         double calorieBurnedBySteps = CalorieBurnedBySteps(userId, recordDate);
-        return calorieBurnedAtRest + calorieBurnedBySteps;
+        return Double.toString(calorieBurnedAtRest + calorieBurnedBySteps);
 
     }
 
@@ -344,11 +349,14 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
         for(Report r:report){
             calorieBurnedOFPeriod+=r.getCalorieBurned();
         }
-        return Double.valueOf(calorieBurnedOFPeriod).toString();
+        return Double.toString(calorieBurnedOFPeriod);
     }
 
     //--------------------------Calorie Consumed Per Day
-    public double CalorieConsumedPerDay(int userId, Date recordDate) {
+    @GET
+    @Path("CalorieConsumedPerDay/{userId}/{recordDate}")
+    @Produces({"application/json"})
+    public String CalorieConsumedPerDay(@PathParam("userId") int userId,@PathParam("recordDate") Date recordDate) {
 //        Query q=em.createNamedQuery("Report.findByUserIdANDRecordDate");
         TypedQuery<Eat> q = em.createQuery("select e from Eat e where e.eatPK.userId=" + userId + " and e.eatPK.eatTime like " + "'" + recordDate + "%'", Eat.class);
         //在一条createQuery语句中:userId不能和+userId+共存
@@ -366,7 +374,24 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
             double calorieOFFood = food.getCalorie();
             calorieConsumed += quentity * calorieOFFood;
         }
-        return calorieConsumed;
+        return Double.toString(calorieConsumed);
+    }
+    
+    //-------------------Calorie Consumed during a period
+    @GET
+    @Path("CalorieConsumedOFPeriod/{userId}/{startDate}/{endDate}")
+    @Produces({"application/json"})
+    public String CalorieConsumedOFPeriod(@PathParam("userId") int userId,@PathParam("startDate") Date sDate,@PathParam("endDate") Date eDate){
+        double calorieConsumedOFPeriod=0;
+        TypedQuery<Report> q=em.createQuery("select r from Report r where r.reportPK.userId=:userId and r.reportPK.recordDate between :startDate and :endDate",Report.class);
+        q.setParameter("userId", userId);
+        q.setParameter("startDate", sDate);
+        q.setParameter("endDate", eDate);
+        List<Report> report=q.getResultList();
+        for(Report r:report){
+            calorieConsumedOFPeriod+=r.getCalorieConsumed();
+        }
+        return Double.toString(calorieConsumedOFPeriod);
     }
 
     //--------------------my code--------------------------------------------

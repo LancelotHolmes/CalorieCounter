@@ -7,6 +7,7 @@ package com.id27315681.service;
 
 import com.id27315681.Eat;
 import com.id27315681.EatPK;
+import com.id27315681.Food;
 import java.sql.Date;
 import java.sql.Timestamp;
 
@@ -196,6 +197,24 @@ public class EatFacadeREST extends AbstractFacade<Eat> {
         String etime=result[2].toString();
         return uname+" ate "+fname+" at "+etime;
     }
+    
+    //-------------------try insert eat info by post
+    /*@GET
+    @Path("InsertByAll/{foodId}/{userId}/{eatTime}/{quentity}/{measure}")
+    @Produces({"application/json"})
+    public void InsertByAll(@PathParam("foodId") int foodId,@PathParam("userId") int userId,@PathParam("eatTime") Timestamp eatTime, @PathParam("quentity") double quentity,@PathParam("measure") String measure){
+        try{
+        Eat eat=new Eat(userId,eatTime);
+        eat.setMeasure(measure);
+        eat.setQuentity(quentity);
+        eat.setFood_Id(foodId);
+        }
+        catch(Exception e)
+        {
+            System.out.println(e);
+        }
+        
+    }*/
 
 
     //--------------------end of my code----------------------

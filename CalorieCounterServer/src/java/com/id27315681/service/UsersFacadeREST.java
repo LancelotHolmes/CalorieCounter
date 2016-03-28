@@ -180,7 +180,7 @@ public class UsersFacadeREST extends AbstractFacade<Users> {
     @GET    //query user info by age and gender
     @Path("findByAgeAndGender/{age}/{gender}")
     @Produces({"application/json"})
-    public List<Users> findByAgeAndGender(@PathParam("age")int age,@PathParam("gender") String gender){//未找到mysql对应java中的tinyint 和bit的数据类型，其中全用int代替在gender处会报错500，所以对于gender只好用boolean来代替，true代表女，1
+    public List<Users> findByAgeAndGender(@PathParam("age")int age,@PathParam("gender") String gender){//gender采用枚举类型
         Query query=em.createNamedQuery("Users.findByAgeAndGender");
         query.setParameter("age", age);
         query.setParameter("gender", gender);

@@ -105,7 +105,9 @@ public class Eat implements Serializable {
     public void setFoodId(Food foodId) {
         this.foodId = foodId;
     }
-
+    
+  
+    
     public Users getUsers() {
         return users;
     }
