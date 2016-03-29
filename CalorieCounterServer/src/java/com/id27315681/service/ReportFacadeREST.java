@@ -182,64 +182,12 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
         return query.getResultList();
     }
 
-    /*//------------------------Calculation with rest methods
+    
+    //------------------------Calculation with rest methods  
     @GET
     @Path("CalculateBMR/{userId}")
     @Produces({"application/json"})
-    public String CalculateBMR(@PathParam("userId") int userId){
-        // dynamic query by id, just for test——>可用现成方法改进
-        TypedQuery<Users> q = em.createQuery("select u from Users u where u.userId=:userId", Users.class);
-        q.setParameter("userId", userId);
-        // get the instance of Class Users through q
-        Users user=q.getSingleResult();
-        String gender=user.getGender();
-        double weight=user.getWeight();
-        double height=user.getHeight();
-        short age=user.getAge();
-        //count BMR by the parameters transmitted from Users
-        Double bmr=Double.valueOf(0);
-        if(gender.toUpperCase().equals("M"))     //——>可用 ? :
-        {   
-            bmr=13.75*weight+5*height-6.76*age+66;
-            return bmr.toString();
-        }
-        else if(gender.toUpperCase().equals("F")){
-            bmr=9.56*weight+1.85*height-4.68*age+655;
-            return bmr.toString();
-        }
-         
-        else
-            return bmr.toString();
-    }*/
-    //------------------------Calculation with rest methods  test version
-    /*@GET
-    @Path("CalculateBMR/{userId}")
-    @Produces({"application/json"})
-    public String CalculateBMR(@PathParam("userId") int userId){
-        Query q=em.createNamedQuery("Users.findByUserId");
-        q.setParameter("userId", userId);
-        // get the instance of Class Users through q
-        Users user=(Users)q.getSingleResult();
-        String gender=user.getGender();
-        double weight=user.getWeight();
-        double height=user.getHeight();
-        short age=user.getAge();
-        //count BMR by the parameters transmitted from Users
-        Double bmr=Double.valueOf(0);
-        if(gender.toUpperCase().equals("M"))     //——>可用 ? :
-        {   
-            bmr=13.75*weight+5*height-6.76*age+66;
-            return bmr.toString();
-        }
-        else if(gender.toUpperCase().equals("F")){
-            bmr=9.56*weight+1.85*height-4.68*age+655;
-            return bmr.toString();
-        }
-        else
-            return bmr.toString();
-    }*/
-    //------------------------Calculation with rest methods  app version
-    public double CalculateBMR(int userId) {
+    public String CalculateBMR(@PathParam("userId") int userId) {
         Query q = em.createNamedQuery("Users.findByUserId");
         q.setParameter("userId", userId);
         // get the instance of Class Users through q
@@ -261,18 +209,21 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
         }
 //        System.out.println(bmr);
         System.out.println("BMR= "+bmr);
-        return bmr;
+        return Double.toString(bmr);
     }
 
     //-----------------------Calculation Calorie Burned at rest
-    public double CalorieBurnedAtRest(int userId) {
+    @GET
+    @Path("CalorieBurnedAtRest/{userId}")
+    @Produces({"application/json"})
+    public String CalorieBurnedAtRest(@PathParam("userId") int userId) {
         Query q = em.createNamedQuery("Users.findByUserId");
         q.setParameter("userId", userId);
         // get the instance of Class Users through q
         Users user = (Users) q.getSingleResult();
         int levelOfAct = user.getLevelOfActivity();
         // get BMR
-        double bmr = CalculateBMR(userId);
+        double bmr = Double.parseDouble(CalculateBMR(userId));
         //count calorie burned at rest by the parameter activity level transmitted from Users
         double calorieRest = bmr;
         switch (levelOfAct) {
@@ -296,12 +247,15 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
                 break;
         }
         System.out.println("Calorie burned at rest for a person: "+calorieRest);
-        return calorieRest;
+        return Double.toString(calorieRest);
 
     }
-
-    //----------------------------Calculation calorie burned by steps from Report by userId & recordDate
-    public double CalorieBurnedBySteps(int userId, Date recordDate) {
+    
+    // Calorie burned for a user per step
+    @GET
+    @Path("CalorieBurnedPerStep/{userId}")
+    @Produces({"application/json"})
+    public String CalorieBurnedPerStep(@PathParam("userId") int userId){
         Query q = em.createNamedQuery("Users.findByUserId");
         q.setParameter("userId", userId);
         // get the instance of Class Users through q
@@ -309,8 +263,14 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
         // get parameter weight&Steps per mile from Users
         double weight = user.getWeight() * KG_LBS;
         double stepsPerMile = user.getStepsPerMile();
+        double calorieBurnedPerMile = weight * 0.49;
+        double calorieBurnedPerStep = calorieBurnedPerMile / stepsPerMile;
+        return Double.toString(calorieBurnedPerStep);
+    }
 
-//        Query qf=em.createNamedQuery("Report.findByUserId");
+    //----------------------------Calculation calorie burned by steps from Report by userId & recordDate
+    public double CalorieBurnedBySteps(int userId, Date recordDate) {
+        //        Query qf=em.createNamedQuery("Report.findByUserId");
         //locate the record from Report by userId and recordDate
         TypedQuery<Report> qr = em.createQuery("select r from Report r where r.reportPK.userId=:userId and r.reportPK.recordDate=:recordDate", Report.class);
         qr.setParameter("userId", userId);  //这里会产生一个错误在于Eat表和Report表不统一而产生的500查询不到错误
@@ -319,10 +279,10 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
         //get parameter total steps per day from Report
         double totalSteps = report.getTotalSteps();
         //calorieBurnedPerMile——>calorieBurnedPerStep
-        double calorieBurnedPerMile = weight * 0.49;
-        double calorieBurnedPerStep = calorieBurnedPerMile / stepsPerMile;
-        System.out.println("Calorie burned by Steps for a person: "+calorieBurnedPerStep * totalSteps);
-        return calorieBurnedPerStep * totalSteps;
+        double calorieBurnedPerStep=Double.parseDouble(CalorieBurnedPerStep(userId));
+        double calorieBurnedBySteps=calorieBurnedPerStep * totalSteps;
+        System.out.println("Calorie burned by Steps for a person: "+calorieBurnedBySteps);
+        return calorieBurnedBySteps;
     }
 
     //----------------------Calorie Burned Per Day
@@ -330,7 +290,7 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
     @Path("CalorieBurnedPerDay/{userId}/{recordDate}")
     @Produces({"application/json"})
     public String CalorieBurnedPerDay(@PathParam("userId") int userId,@PathParam("recordDate") Date recordDate) {
-        double calorieBurnedAtRest = CalorieBurnedAtRest(userId);
+        double calorieBurnedAtRest =Double.parseDouble(CalorieBurnedAtRest(userId));
         double calorieBurnedBySteps = CalorieBurnedBySteps(userId, recordDate);
         return Double.toString(calorieBurnedAtRest + calorieBurnedBySteps);
 
