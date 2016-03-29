@@ -260,6 +260,7 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
 //            return bmr;
         }
 //        System.out.println(bmr);
+        System.out.println("BMR= "+bmr);
         return bmr;
     }
 
@@ -294,7 +295,7 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
                 System.out.println("Wrong activity level");
                 break;
         }
-        System.out.println(calorieRest);
+        System.out.println("Calorie burned at rest for a person: "+calorieRest);
         return calorieRest;
 
     }
@@ -320,7 +321,7 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
         //calorieBurnedPerMile——>calorieBurnedPerStep
         double calorieBurnedPerMile = weight * 0.49;
         double calorieBurnedPerStep = calorieBurnedPerMile / stepsPerMile;
-        System.out.println(calorieBurnedPerStep * totalSteps);
+        System.out.println("Calorie burned by Steps for a person: "+calorieBurnedPerStep * totalSteps);
         return calorieBurnedPerStep * totalSteps;
     }
 
