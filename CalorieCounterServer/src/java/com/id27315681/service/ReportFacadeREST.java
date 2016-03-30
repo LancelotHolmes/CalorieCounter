@@ -319,7 +319,7 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
     @Produces({"application/json"})
     public String CalorieConsumedPerDay(@PathParam("userId") int userId,@PathParam("recordDate") Date recordDate) {
 //        Query q=em.createNamedQuery("Report.findByUserIdANDRecordDate");
-        TypedQuery<Eat> q = em.createQuery("select e from Eat e where e.eatPK.userId=" + userId + " and e.eatPK.eatTime like " + "'" + recordDate + "%'", Eat.class);
+        TypedQuery<Eat> q = em.createQuery("select e from Eat e where e.eatPK.userId=" + userId + " and e.eatPK.eatTime like '" + recordDate + "%'", Eat.class);
         //在一条createQuery语句中:userId不能和+userId+共存
 //        q.setParameter("userId", userId);
         // get the parameter quentity of Class Eat through q
@@ -354,7 +354,14 @@ public class ReportFacadeREST extends AbstractFacade<Report> {
         }
         return Double.toString(calorieConsumedOFPeriod);
     }
-
+    
+    //Calorie Consumed AND Burned OF Period
+    @GET
+    @Path("CalorieConsumedANDBurnedOFPeriod/{userId}/{startDate}/{endDate}")
+    @Produces({"application/json"})
+    public String CalorieConsumedANDBurnedOFPeriod(@PathParam("userId") int userId,@PathParam("startDate") Date sDate,@PathParam("endDate") Date eDate){
+        return "Calorie Consumed from "+sDate+" to "+eDate+": "+CalorieConsumedOFPeriod(userId, sDate, eDate)+"\n"+"Calorie Burned from "+sDate+" to "+eDate+": "+CalorieBurnedOFPeriod(userId, sDate, eDate);
+    }
     //--------------------my code--------------------------------------------
     @Override
     protected EntityManager getEntityManager() {
